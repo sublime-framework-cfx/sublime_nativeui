@@ -1,11 +1,12 @@
 fx_version 'cerulean'
-game 'gta5'
+games { 'gta5', 'rdr3' } --- not tested on rdr3
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
-client_script 'init.lua'
-
 files {
-    'imports/**.lua',
-    'obj.lua'
+    'init.lua',
+    'src/**',
+    'src/**/**'
 }
+
+client_script 'src/main.lua'
