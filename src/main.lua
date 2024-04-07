@@ -1,88 +1,124 @@
-local MenusRegistered, currentVisible = {}, nil
-
 local function PlayExports(export, ...)
     local resourceName <const> = export:match('(.+)%..+')
     local methodName <const> = export:match('.+%.(.+)')
     return exports[resourceName][methodName](nil, ...)
 end
 
----@class SubRegisterMenuProps
----@field id string
+local nativeui = setmetatable({
+    registered = {},
+    current = '',
+    last = '',
+    exportsMethod = {}
+}, {
+    __newindex = function(self, name, value)
+        rawset(self, name, value)
+        if type(value) == 'function' then
+            self.exportsMethod[name] = true
+            exports(name, value)
+        end
+    end
+})
 
----@class RegisterMenuProps
----@field id string
----@field env string
----@field submenu SubRegisterMenuProps
+function nativeui.GetExportMethod()
+    return nativeui.exportsMethod
+end
 
 ---@param menu RegisterMenuProps
----@return nil
-local function RegisterMenu(menu)
-    if MenusRegistered[menu.id] then
+function nativeui.RegisterMenu(menu)
+    if nativeui.registered[menu.id] then
         return  warn(('Menu with id %s already registered in this resource : %s'):format(menu.id, menu.env))
     end
 
-    MenusRegistered[menu.id] = menu
+    nativeui.registered[menu.id] = menu
 end
 
 ---@param id string
 ---@param subId? string
----@return nil
-local function OpenMenu(id, subId)
-    if not MenusRegistered[id] then
+function nativeui.OpenMenu(id)
+    if not nativeui.registered[id] then
         return warn(('Menu with id %s not registered'):format(id))
     end
 
-    if currentVisible then
-        local menu <const> = MenusRegistered[currentVisible]
+    if nativeui.current and #nativeui.current > 0 then
+        local menu <const> = nativeui.registered[nativeui.current]
         local exp <const> = menu.env..'.'..'CloseMenu'
-        PlayExports(exp, id, subId)
+        PlayExports(exp, id)
     end
 
-    local menu <const> = MenusRegistered[id]
+    local menu <const> = nativeui.registered[id]
     local exp <const> = menu.env..'.'..'OpenMenu'
-    PlayExports(exp, id, subId)
+    local opened = PlayExports(exp, id)
 
-    currentVisible = id
+    nativeui.current = opened
 end
 
-local function CloseMenu()
-    if not currentVisible then
+function nativeui.CloseMenu()
+    if not nativeui.current or #nativeui.current == 0 then
         return warn('No menu visible')
     end
 
-    local menu <const> = MenusRegistered[currentVisible]
+    local menu <const> = nativeui.registered[nativeui.current]
     local exp <const> = menu.env..'.'..'CloseMenu'
-    currentVisible = PlayExports(exp, currentVisible)
+    nativeui.current = PlayExports(exp, nativeui.current)
+    nativeui.current = ''
 end
 
-local function CurrentOpen()
-    return currentVisible
+---@return string
+function nativeui.CurrentOpen()
+    return (nativeui.current and #nativeui.current > 0) and nativeui.current or ''
 end
 
-local function UpdateMenu(id, subId)
-    if not MenusRegistered[id] then
+---@param id string
+---@param subId string
+function nativeui.UpdateMenu(id, subId)
+    if not nativeui.registered[id] then
         return warn(('Menu with id %s not registered'):format(id))
     end
 
-    if MenusRegistered[id].submenu[subId] then
+    if nativeui.registered[id].submenu[subId] then
         return warn(('Submenu with id %s not registered in menu %s'):format(subId, id))
     end
 
-    MenusRegistered[id].submenu[subId] = subId
+    nativeui.registered[id].submenu[subId] = subId
 end
 
-exports('RegisterMenu', RegisterMenu)
-exports('OpenMenu', OpenMenu)
-exports('CloseMenu', CloseMenu)
-exports('CurrentOpen', CurrentOpen)
-exports('UpdateMenu', UpdateMenu)
+function nativeui.SetVisible(id)
+    nativeui.current = id
+    print(id, #id)
+    if #id > 0 then
+        nativeui.last = id
+    end
+end
 
+function nativeui.GetParent(id)
+    for k, v in pairs(nativeui.registered) do
+        if v.submenu[id] then
+            return k
+        end
+    end
+
+    return false
+end
+
+function nativeui.OpenLastMenu()
+    if #nativeui.last > 0 then
+        print(nativeui.last, nativeui.current)
+        if (nativeui.current and #nativeui.current > 0) and (nativeui.current == nativeui.last) then
+            return warn('Menu already open')
+        end
+        nativeui.OpenMenu(nativeui.last)
+    end
+end
+
+RegisterCommand('lok', function()
+    print(json.encode(nativeui.registered, {indent = true}))
+end)
 
 RegisterCommand('ook', function()
-    if not currentVisible then
-        OpenMenu('main')
+    print(nativeui.current)
+    if not nativeui.current or #nativeui.current == 0 then
+        nativeui.OpenMenu('sub')
     else
-        print('currentVisible', currentVisible)
-        currentVisible = CloseMenu()
+        nativeui.current = nativeui.CloseMenu()
     end
 end)
