@@ -6,9 +6,16 @@ end
 local s_ui <const> = 'sublime_nativeui'
 local service <const> = IsDuplicityVersion() and 'server' or 'client'
 
--- if not GetResourceState(s_ui):find('start') then
--- 	error('^1sublime_nativeui doit être lancé avant cette ressource!^0', 2)
--- end
+if service == 'server' then
+    error("^1sublime_nativeui ne peut pas être utilisé dans une ressource serveur!^0", 2)
+end
+
+if not GetResourceState(s_ui):find('start') then
+    error('^1sublime_nativeui doit être lancé avant cette ressource!^0', 2)
+end
+
+local export <const> = exports[s_ui]
+
 
 local loaded = {}
 package = not lib and {
@@ -95,219 +102,65 @@ end
 
 _r = LoadModule
 
-local mt_pvt = {
-    __metatable = 'private',
-    __ext = 0,
-    __pack = function() return '' end,
-}
+local function void() end
+local function load_module(self, index)
+    if self.exportsMethod[index] then return end
+    local func, err, dir, data
 
----@param obj table
----@return table
-local function NewInstance(self, obj)
-    if obj.private then
-        setmetatable(obj.private, mt_pvt)
+    for k, v in pairs(self.module) do
+        dir = v..'/'..index
+        data = LoadResourceFile(s_ui, dir..'.lua')
+        if data then break end
     end
 
-    setmetatable(obj, self)
+    if not data then return end
 
-    if self.Init then obj:Init() end
+    local chunk <const> = data
 
-    if obj.export then
-        self.__export[obj.export] = obj
+    if chunk then
+        func, err = load(chunk, ('@@%s/%s'):format(s_ui, dir))       
+        if err then error(("Error to loading modules :\n- From : %s\n - Modules : %s\n - Service : %s\n - Error : %s"):format(dir, index, service, err), 3) end
+
+        local result = func()
+        rawset(self, index, result or void)
+        return self[index]
     end
-
-    return obj
 end
-
----@param name string
----@param super? table
----@param exportMethod? boolean
----@return table
-local function class(name, super, exportMethod)
-    local self = {
-        __name = name,
-        new = NewInstance
-    }
-
-    self.__index = self
-
-    if exportMethod and not super then
-        self.__exportMethod = {}
-        self.__export = {}
-
-        setmetatable(self, {
-            __newindex = function(_, key, value)
-                rawset(_, key, value)
-                self.__exportMethod[key] = true
-            end
-        })
-
-        exports('GetExportMethod', function()
-            return self.__exportMethod
-        end)
-
-        exports('CallExportMethod', function(name, method, ...)
-            local export <const> = self.__export[name]
-            return export[method](export, ...)
-        end)
-    end
-    
-    return super and setmetatable(self, {
-        __index = super,
-        __newindex = function(_, key, value)
-            rawset(_, key, value)
-            if type(value) == 'function' then
-                if self.__exportMethod then
-                    self.__exportMethod[key] = true
-                end
-            end
-        end
-    }) or self
-end
-
-local ExportMethod, MyClassExport = {}, {}
-
-local function exportsClass(resource, name, prototype)
-    ExportMethod[name] = {}
-    setmetatable(ExportMethod[name], {
-        __index = function(_, index)
-            ExportMethod[name] = exports[resource]:GetExportMethod(index)
-            return ExportMethod[name][index]
-        end
-    })
-
-    MyClassExport[name] = {}
-    local Class = MyClassExport[name]
-    function Class:__index(index)
-        local method = MyClassExport[name][index]
-
-        if method then
-            return function(...)
-                return method(self, ...)
-            end
-        end
-
-        local export = ExportMethod[name][index]
-
-        if export then
-            return function(...)
-                return exports[resource]:CallExportMethod(name, index, ...)
-            end
-        end
-    end
-
-    return setmetatable(prototype or {}, Class)
-end
-
-function void() end
 
 local function call_module(self, index, ...)
     local module = rawget(self, index)
     if not module then
         self[index] = void
-        module = _r('@sublime_nativeui.src.items.'..index)
+        module = load_module(self, index)
         if not module then
-            return warn(('module %s not found'):format(index))
+            local function method(...)
+                return export[index](nil, ...)
+            end
+            if not ... then
+                self[index] = method
+            end
+            return method
         end
-        self[index] = module
     end
     return module
 end
 
-local nativeui = class('nativeui')
+local nativeui = setmetatable({
+    menus = {},
+    current = '',
+    exportsMethod = export:GetExportMethod(),
+    env = GetCurrentResourceName(),
+    module = {
+        --items = 'src/items', ceci ne compte pas comme des module de nativeui
+        --panels = 'src/panels', ceci ne compte pas comme des module de nativeui
+
+        -- il y aura plus un module menupause, scaleform, progressbar etc...
+        menu = 'src/menu',
+    }
+}, {
+    __index = call_module,
+    __call = call_module,
+})
 
 _ENV.nativeui = nativeui
-
-local Menus = {}
-
-function nativeui:Init()
-    print(self.id)
-    self.opened = false
-    
-    if not self.isSub then
-        self.submenu = {}
-        exports[s_ui]:RegisterMenu({
-            id = self.id,
-            env = GetCurrentResourceName(),
-            submenu = self.submenu,
-        })
-    end
-
-    self.items = setmetatable({
-        size = 0,
-    }, {
-        __index = call_module,
-        __call = call_module,
-    })
-
-    Menus[self.id] = self
-end
-
-function nativeui:destroy()
-    Menus[self.id] = nil
-end
-
-function nativeui:Open()
-    local current = exports[s_ui]:CurrentOpen()
-    if current then
-        if current == self.id then return end
-        exports[s_ui]:CloseMenu()
-    end
-    if self.opened then return end
-    
-    --if exports[s_ui]:() then return end
-    self.opened = true
-    self:GoPool()
-end
-
-function nativeui:AddSubMenu(_menu)
-    if self.submenu[_menu.id] then return end
-    _menu.isSub = true
-    self.submenu[_menu.id] = nativeui:new(_menu, self)
-    exports[s_ui]:UpdateMenu(self.id, _menu.id)
-    return self.submenu[_menu.id]
-end
-
-function nativeui:Close()
-    if not self.opened then return end
-    self.opened = false
-    --self:onClose()
-end
-
-function nativeui.CloseAll()
-    if exports[s_ui]:CurrentOpen() then
-        exports[s_ui]:CloseMenu()
-        return nil
-    end
-end
-
-function nativeui:isOpen()
-    return self.opened
-end
-
-function nativeui:GoPool()
-    CreateThread(function()
-        while self.opened do
-            self.items.size = 0
-            self:pool(self.items)
-            DrawRect(0.5, 0.5, self.width or .2, 0.2, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
-            Wait(0)
-        end
-    end)
-end
-
-local function OpenMenu(id)
-   if Menus[id] then
-       Menus[id]:Open()
-   end 
-end
-
-local function CloseMenu(id)
-    if Menus[id] then
-        Menus[id]:Close()
-        return nil
-    end
-end
-
-exports('OpenMenu', OpenMenu)
-exports('CloseMenu', CloseMenu)
+_ENV.void = void
