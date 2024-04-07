@@ -1,12 +1,12 @@
-local config <const> = _r '@sublime_nativeui.config.menu' 
-local class <const> = _r '@sublime_nativeui.src.utils.class'
+local config <const> = require '@sublime_nativeui.config.menu' 
+local class <const> = require '@sublime_nativeui.src.utils.class'
 local Menu = class('menu')
 local nativeui = _ENV.nativeui
 local Items, Panels = setmetatable({}, {
     __index = function(self, index)
         local item = rawget(self, index)
         if item then return item end
-        item = _r(('@sublime_nativeui.src.menu.items.%s'):format(index))
+        item = require(('@sublime_nativeui.src.menu.items.%s'):format(index))
         if not item then return warn(('item %s not found'):format(index)) end
         rawset(self, index, item)
         return item
@@ -15,7 +15,7 @@ local Items, Panels = setmetatable({}, {
     __index = function(self, index)
         local panel = rawget(self, index)
         if panel then return panel end
-        panel = _r(('@sublime_nativeui.src.menu.panels.%s'):format(index))
+        panel = require(('@sublime_nativeui.src.menu.panels.%s'):format(index))
         if not panel then return warn(('panel %s not found'):format(index)) end
         rawset(self, index, panel)
         return panel
@@ -46,14 +46,14 @@ function Menu:Init()
         menu.submenu[self.id] = self
         nativeui.RegisterMenu({
             id = self.id,
-            env = GetCurrentResourceName(),
+            env = nativeui.env,
             submenu = {}
         })
         nativeui.UpdateMenu(menu.id, self.id)
     else
         nativeui.RegisterMenu({
             id = self.id,
-            env = GetCurrentResourceName(),
+            env = nativeui.env,
             submenu = {}
         })
     end
