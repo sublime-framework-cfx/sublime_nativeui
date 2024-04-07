@@ -1,4 +1,4 @@
-local config <const> = require '@sublime_nativeui.config.menu' 
+local config <const> = require '@sublime_nativeui.config.menu.global' 
 local class <const> = require '@sublime_nativeui.src.utils.class'
 local Menu = class('menu')
 local nativeui = _ENV.nativeui
