@@ -8,7 +8,11 @@ local nativeui = setmetatable({
     registered = {},
     current = '',
     last = '',
-    exportsMethod = {}
+    exportsMethod = {},
+    path = {
+        CreateMenu = '@sublime_nativeui.src.menu.CreateMenu',
+        -- CreatePauseMenu = '@sublime_nativeui/src/menu/CreatePauseMenu', -- not implemented
+    }
 }, {
     __newindex = function(self, name, value)
         rawset(self, name, value)
@@ -18,6 +22,10 @@ local nativeui = setmetatable({
         end
     end
 })
+
+function nativeui.GetPathModule(index)
+    return nativeui.path[index]
+end
 
 function nativeui.GetExportMethod()
     return nativeui.exportsMethod
@@ -110,6 +118,7 @@ function nativeui.OpenLastMenu()
     end
 end
 
+--- ONLY FOR TESTING look at the example.lua
 RegisterCommand('lok', function()
     print(json.encode(nativeui.registered, {indent = true}))
 end)
