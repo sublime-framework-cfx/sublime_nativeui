@@ -14,7 +14,7 @@ return function(self, menu, styles)
         end
     end
 
-    if styles and (type(styles) == 'table' and table.type(styles) == 'hash') then -- avoid error
+    if styles and (type(styles) == 'table' and table.type(styles) == 'hash') then
         ---@todo personalize line style, color, animation, etc ...
     end
 end

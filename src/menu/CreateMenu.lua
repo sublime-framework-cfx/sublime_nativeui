@@ -22,6 +22,10 @@ local Items, Panels = setmetatable({}, {
     end,
 })
 
+function Items:IsActive(menu)
+    return menu.index == menu.size
+end
+
 function Menu:Init()
     if not self.id then
         return warn('Menu id is required')
@@ -29,6 +33,21 @@ function Menu:Init()
 
     self.x = self.x or config.x
     self.y = self.y or config.y
+    self.w = self.w or config.w
+    self.offset = 0
+    self.marginItem = self.marginItem or config.marginItem
+
+    self.default = {
+        x = self.x,
+        y = self.y,
+        w = self.w,
+        --offset = self.offset,
+    }
+
+    self.banner = self.banner or config.banner
+    self.glare = (not self.banner and false) or (self.glare or config.glare)
+    self.pagination = self.pagination or config.pagination
+    self.backgroundColor = self.backgroundColor or config.backgroundColor
 
     self.opened = false
     self.index = 1
@@ -77,12 +96,73 @@ function Menu:Open()
     return self.id
 end
 
+
+local function Responsive(data)
+    local w, h = GetActiveScreenResolution()
+    local base = GetAspectRatio(true)
+    local ratio = (16 / 9) / base
+    local width = ratio * w
+
+    local x = data.x + (data.w * data.x)
+    local newData = {
+        x = (x * width) / w,
+        w = (data.w * width) / w,
+        y = data.y,
+        h = data.h,
+    }
+
+    return newData
+end
+
+function Menu:Banner()
+    self.offset = .1
+    DrawRect(self.x, self.offset + (self.y / 2), self.w, self.offset, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
+    if self.subtitle then
+        self:Subtitle()
+    end
+end
+
+function Menu:Background()
+    DrawRect(self.x, self.offset - (self.y * 2), self.w, self.offset, 0, 0, 0, 100)
+end
+
+function Menu:Subtitle()
+    self.offset += .03
+    DrawRect(self.x, self.y + self.offset, self.w, .03, 255, self.backgroundColor[2], self.backgroundColor[3], 50)
+end
+
+function Menu:Description()
+    self.offset += .025
+    DrawRect(self.x, self.y + self.offset, self.w, .025, 0, self.backgroundColor[2], 255, 50)
+end
+
 function Menu:GoPool()
     CreateThread(function()
         while self.opened do
-            self.size = 0
+            local data = Responsive(self.default)
+
+            self.x = data.x
+            self.y = data.y
+            self.w = data.w
+            Wait(5000)
+        end
+    end)
+
+    CreateThread(function()
+        while self.opened do
+            self.size, self.offset = 0, 0
+            if self.banner then
+                self:Banner()
+            elseif self.subtitle then
+                self:Subtitle()            
+            end
             self:pool(Items, Panels)
-            DrawRect(0.5, 0.5, self.width or .2, 0.2, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
+            
+            if self.currentDescription then
+                self:Description()
+            end
+
+            self:Background()
             Wait(0)
         end
     end)
