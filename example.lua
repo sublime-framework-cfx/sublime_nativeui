@@ -3,16 +3,17 @@ local menu = nativeui.CreateMenu:new({
     title = 'Main Menu',
     subtitle = 'subtitle',
     backgroundColor = {255, 255, 255, 125},
-    width = .2,
+    --width = .2,
 })
 
 local sub = nativeui.CreateMenu:new({
     parent = 'main',
     id = 'sub',
     title = 'Main Menu',
-    subtitle = 'subtitle',
-    backgroundColor = {0, 255, 255, 125},
-    width = .1,
+    backgroundColor = {0, 0, 0, 125},
+    --x = .075,
+    --y = .1,
+    --w = .1,
 })
 
 -- local sub = menu:AddSubMenu({
@@ -25,24 +26,69 @@ local sub = nativeui.CreateMenu:new({
 
 local isAsync = 'mon button 1'
 
-function menu:pool(item, panel)
-    item:AddButton(self, isAsync, 'et ouais')
-    local button2 = item:AddButton(self, 'mon button 2', 'et ouais', sub)
+function menu:Pool(item, panel)
+    for i = 1, 100 do
+        item:AddButton(self, 'mon button '..i, 'et ouais', nil, {
+            onEnter = function(obj, menu)
+                print('onEnter '..obj.id, menu.index)
+            end, onExit = function(obj, menu)
+                print('onExit '..obj.id, menu.index)
+            end, onSelected = function(obj, menu)
+                print('onSelected '..obj.id, menu.index)
+            end
+        })
 
-    -- panel:Slider(self, button2, 'mon slider', 0, 100, 50, 1, 'et ouais')
-    -- panel:Slider(self, button2, 'mon slider 2', 0, 100, 50, 1, 'et ouais')
+        if i == 5 then
+            item:AddButton(self, 'mon button 5', 'et ouais', nil, {
+                onEnter = function(obj, menu)
+                    print('onEnter '..obj.id, menu.index)
+                end, onExit = function(obj, menu)
+                    print('onExit '..obj.id, menu.index)
+                end, onSelected = function(obj, menu)
+                    print('onSelected '..obj.id, menu.index)
+                end, onActive = function(obj, menu)
+                    print('onActive '..obj.id, menu.index)
+                end
+            }, sub)
+        end
+    end
+    
+end
 
-    if IsControlJustPressed(0, 38) then -- E
-        print('here?')
-        sub:Open()
+function sub:Closed()
+    print("j'ai fermer mon submenu")
+end
+
+function sub:Pool(item)
+    item:AddButton(self, 'mon button 3', 'et ouais', nil, {
+        onEnter = function(obj, menu)
+            print('onEnter '..obj.id, menu.index)
+        end, onExit = function(obj, menu)
+            print('onExit '..obj.id, menu.index)
+        end
+    })
+    item:AddButton(self, 'mon button 4', 'et ouais', nil, {
+        onEnter = function(obj, menu)
+            print('onEnter '..obj.id, menu.index)
+        end, onExit = function(obj, menu)
+            print('onExit '..obj.id, menu.index)
+        end
+    }, menu)
+
+    for i = 1, 100 do
+        item:AddButton(self, 'mon button '..i, 'et ouais', nil, {
+            onEnter = function(obj, menu)
+                print('onEnter '..obj.id, menu.index)
+            end, onExit = function(obj, menu)
+                print('onExit '..obj.id, menu.index)
+            end
+        })
     end
 end
 
-function sub:pool(item)
-    item:AddButton(self, 'mon button 3', 'et ouais')
-    item:AddButton(self, 'mon button 4', 'et ouais')
-    --print('here?')
-end
+RegisterCommand('chi', function()
+    sub.index = 2
+end)
 
 RegisterCommand('oplast', function()
     nativeui.OpenLastMenu()
