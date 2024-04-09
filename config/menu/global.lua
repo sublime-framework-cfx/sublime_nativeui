@@ -3,13 +3,16 @@
 --]]
 
 return {
-    banner = true,
+    -- Banner & Subtitle
+    banner = true, --[[ nil / false if you don't want subtitle ]]
+    bannerH = .09,
+    subtitle = 'Selected', --[ [nil / false if you don't want subtitle ]]
+    subtitleH = .03,
     glare = true,
-    pagination = { min = 1, max = 12 },
-    x = .125,
-    y = .065,
-    w = .225,
-    marginItem = 0.0025,
-    --h = 0.2,
-    backgroundColor = { 0, 0, 0, 100 },
+    background = false,
+    maxVisibleItems = 12,
+    pagination = { min = 1 --[[ don't touch this! ]], max = 12 --[[@as maxVisibleItems]] },
+    default = { x = .035, y = .045, w = .225, h = .2 --[[@unknown ]] },
+    padding = .0025, -- padding between all elements (banner, subtitle, items, etc...)
+    backgroundColor = { 0, 0, 0, 100 }, --[[@as rgba]]
 }
