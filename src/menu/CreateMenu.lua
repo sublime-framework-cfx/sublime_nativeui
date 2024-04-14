@@ -2,6 +2,7 @@ local config <const> = require '@sublime_nativeui.config.menu.global'
 local class <const> = require '@sublime_nativeui.src.utils.class'
 local Controler <const> = require '@sublime_nativeui.src.menu.components.controler'
 local animations <const> = require '@sublime_nativeui.src.menu.components.animation.play'
+---@type DrawProps
 local draw <const> = require '@sublime_nativeui.src.utils.draw'
 math.round = require '@sublime_nativeui.src.utils.math'.Round
 
@@ -126,10 +127,10 @@ function Menu:SetGlare(boolean)
     self.glare = boolean
 end
 
-function Menu:SetSizeResponsive()
+function Menu:SetSizeResponsive() ---@todo ici pour le moment ca se base sur un menu en haut à gauche a voir dans le config pour faire les pos 'top-left', 'top-right', 'bottom-left', 'bottom-right'
     local rw <const>, rh <const> = nativeui.cache.rw, nativeui.cache.rh
     local ratio <const> = nativeui.cache.ratio
-    -- example w = 2540, data.w = .2 (alors 2540 * .2 = 508) 508 / 2540 = 0.2
+    -- example: w = 2540, data.w = .2 (alors 2540 * .2 = 508) 508 / 2540 = 0.2
 
     self.w = ratio * ((rw * config.default.w) / rw)
     self.rh, self.rw = rh, rw
@@ -144,28 +145,10 @@ function Menu:GetY(h)
     return (h / 2) + self.y
 end
 
-function Menu:Banner()
+function Menu:Banner() ---@todo personalization config & menu object
     local y <const> = self:GetY(self.bannerH)
-    --DrawRect(self.x, y, self.w, self.bannerH, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
-    draw.rect({
-        x = self.x,
-        y = y,
-        w = self.w,
-        h = self.bannerH,
-        r = self.backgroundColor[1],
-        g = self.backgroundColor[2],
-        b = self.backgroundColor[3],
-        a = self.backgroundColor[4]
-    })
-    draw.text({
-        x = self.x * .35,
-        y = y * .7,
-        text = self.title,
-        font = 1,
-        scale = .9,
-        color = {255, 255, 255, 255},
-        shadow = true
-    })
+    draw.rect(self.x, y, self.w, self.bannerH, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
+    draw.text(self.title, self.x * .35, y * .7, 1, .9, 255, 255, 255, 255, true)
     self.offsetY += (self.bannerH + self.padding)
 
     if self.scaleformGlare then ---@todo A voir pour refaire les calcules pour calibrer le scaleform a la bannière...
@@ -173,9 +156,12 @@ function Menu:Banner()
         local gx <const> = (self.x / self.rw + 0.485) 
         local gy <const> = self.y + 0.449
 
-        -- permet compatible format 21/9 & 16/9 mais pas le reste
+        -- A savoir pour info que au niveau de la résolution le scaleform n'est pas impacté, mais il est impacté par le ratio (format image)
+        -- Il se base sur 1270 x 720 (16/9) pour le scaleform, donc si on est en 21/9 par exemple, il va falloir recalculer le scaleform
+        -- Permet compatible format 21/9 & 16/9 mais pas le reste
+        -- Bref j'ai fait quelque calcule pour trouver un compromis, mais c'est pas parfait à voir si des gens trouve mieux...
         local reScale <const> = math.round(self.ratio, 2) == 1.0 and 1.0 or (math.round(self.ratio, 2) - (.1 * .7))
-        DrawScaleformMovie(self.scaleformGlare, gx * reScale, gy, 1.0, 1.0, 255, 255, 255, 255, 0)
+        draw.scaleformMovie(self.scaleformGlare, gx * reScale, gy, 1.0, 1.0, 255, 255, 255, 255)
     end
     if self.subtitle then
         self:Subtitle()
@@ -183,39 +169,10 @@ function Menu:Banner()
 end
 
 function Menu:Subtitle()
-    local y = self:GetY(self.subtitleH)
-    draw.rect({
-        x = self.x,
-        y = y + self.offsetY,
-        w = self.w,
-        h = self.subtitleH,
-        r = 0,
-        g = 0,
-        b = 0,
-        a = 200
-    })
-
-    draw.text({
-        x = self.x - self.w / 2 + .005,
-        y = y * .785 + self.offsetY,
-        text = self.subtitle,
-        font = 0,
-        scale = .27,
-        color = {255, 255, 255, 255},
-        shadow = true
-    })
-
-    draw.text({
-        x = self.x + self.w / 2 - .005,
-        y = y * .785 + self.offsetY,
-        text = self.index .. '/' .. self.totalCounter,
-        font = 0,
-        scale = .27,
-        color = {255, 255, 255, 255},
-        shadow = true,
-        alignment = 'right'
-    })
-
+    local y <const> = self:GetY(self.subtitleH)
+    draw.rect(self.x, y + self.offsetY, self.w, self.subtitleH, 0, 0, 0, 200)
+    draw.text(self.subtitle, self.x - self.w / 2 + .005, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, true)
+    draw.text(self.index .. '/' .. self.totalCounter, self.x + self.w / 2 - .001, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, 'right', true)
     self.offsetY += (self.subtitleH + self.padding)
 end
 
@@ -225,23 +182,12 @@ function Menu:SetSubtitle(value)
     end
 end
 
-function Menu:Background()
+function Menu:Background() ---@todo personalization config & menu object
     local y = self:GetY(self.totalOffsetY)
-
-    -- DrawRect(self.x, y, self.w, self.offsetY, 255, 255, 255, 100)
-    draw.rect({
-        x = self.x,
-        y = y,
-        w = self.w,
-        h = self.totalOffsetY,
-        r = self.backgroundColor[1],
-        g = self.backgroundColor[2],
-        b = self.backgroundColor[3],
-        a = self.backgroundColor[4]
-    })
+    draw.rect(self.x, y, self.w, self.totalOffsetY, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
 end
 
-function Menu:Description() ---@todo
+function Menu:Description() ---@todo personalization config & menu object
     if not self.currentDescription then return end
     if self.lastDescription ~= self.currentDescription then 
         self.totalTextWidthDesc = draw.measureStringWidth(self.currentDescription, 0, .27)
@@ -265,27 +211,9 @@ function Menu:Description() ---@todo
     local yText <const> = self:GetY(self.offsetY * 2 + self.padding) + self.padding
     local yRect <const> = self:GetY(self.offsetY * 2 + self.padding + self.descH * .5) + .005
 
-    draw.rect({
-        x = self.x,
-        y = yRect,
-        w = self.w,
-        h = (self.descH * .5) + .01,
-        r = 0,
-        g = 0,
-        b = 0,
-        a = 200
-    })
-
-    draw.text({
-        x = self.x - self.w / 2 + .005,
-        y = yText + self.padding,
-        text = self.currentDescription,
-        font = 0,
-        scale = .27,
-        color = {255, 255, 255, 255},
-        shadow = true,
-        wordWrap = self.w
-    })    
+    ---@todo personalization config & menu object
+    draw.rect(self.x, yRect, self.w, (self.descH * .5) + .01, 0, 0, 0, 200)
+    draw.text(self.currentDescription, self.x - self.w / 2 + .005, yText + self.padding, 0, .27, 255, 255, 255, 255, nil, true, true, self.w)
 end
 
 function Menu:Elements(Item, Panel)
@@ -345,24 +273,32 @@ function Menu:GoPool()
     end)
 end
 
+---@return nil
 function Menu:Destroy()
     nativeui.menus[self.id] = nil
     return nil
 end
 
+---@return boolean
 function Menu:IsOpen()
     return self.opened
 end
 
+---@param to string | Menu
 function Menu:NextMenu(to)
     local menu <const> = type(to) == 'string' and to or to.id
     nativeui.OpenMenu(menu)
 end
 
+---@param clearQueue? boolean
+---@return boolean, string?
 function Menu:Open(clearQueue)
     return nativeui.OpenMenu(self.id, nil, clearQueue)
 end
 
+---@param _type? string<'GoBack'>
+---@param clearQueue? boolean
+---@return boolean, string?
 function Menu:Close(_type, clearQueue)
     if not self.opened then
         return false, ('Menu with id %s not opened'):format(self.id)
@@ -376,6 +312,7 @@ function Menu:Close(_type, clearQueue)
     return true
 end
 
+---@return boolean, string?
 function Menu:GoOpen()
     if self.opened then
         return false, ('Menu with id %s already opened'):format(self.id)
@@ -384,14 +321,17 @@ function Menu:GoOpen()
     self.opened = true
     self:GoPool()
 
-    return self.id
+    return true
 end
 
+---@param x float
+---@param y float
 function Menu:SetPosition(x, y)
     self.x = x or self.x
     self.y = y or self.y
 end
 
+---@return boolean
 function Menu:GoClose()
     if self.animation or config.animation then
         CreateThread(function()

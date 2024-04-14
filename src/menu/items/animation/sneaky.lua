@@ -1,9 +1,9 @@
 --- Sneaky animation
---- @param options table
 --- @param menu Menu
+--- @param options table
 --- @param config table
 --- @param data table
---- @param rect RectProps
+--- @param rect DrawProps.rect<{rect: fun(x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer): void}>
 return function(self, menu, options, config, data, rect)
     local h_top_bottom <const> = data.h * .1
 
@@ -36,16 +36,16 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 1
-                x = newX1,
-                y = y1_bottom,
-                w = w1,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 1
+                newX1,
+                y1_bottom,
+                w1,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             w1 += (data.w * .005)
             newX1 += (data.w * .005) * .5
@@ -54,27 +54,27 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 1
-                x = data.x,
-                y = y1_bottom,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 1
+                data.x,
+                y1_bottom,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 2
-                x = data.x + (data.w * .5),
-                y = newY2,
-                w = h_top_bottom * .5,
-                h = y2,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 2
+                data.x + (data.w * .5),
+                newY2,
+                h_top_bottom * .5,
+                y2,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             y2 += (data.h * .05)
             newY2 -= (data.h * .05) * .5
@@ -83,38 +83,38 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 1
-                x = data.x,
-                y = y1_bottom,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 1
+                data.x,
+                y1_bottom,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 2
-                x = data.x + (data.w * .5),
-                y = data.y,
-                w = h_top_bottom * .5,
-                h = data.h,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 2
+                data.x + (data.w * .5),
+                data.y,
+                h_top_bottom * .5,
+                data.h,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 3
-                x = newX3,
-                y = y3_top,
-                w = w3,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 3
+                newX3,
+                y3_top,
+                w3,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             w3 += (data.w * .005)
             newX3 -= (data.w * .005) * .5
@@ -123,49 +123,49 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 1
-                x = data.x,
-                y = y1_bottom,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 1
+                data.x,
+                y1_bottom,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 2
-                x = data.x + (data.w * .5),
-                y = data.y,
-                w = h_top_bottom * .5,
-                h = data.h,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 2
+                data.x + (data.w * .5),
+                data.y,
+                h_top_bottom * .5,
+                data.h,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 3
-                x = data.x,
-                y = y3_top,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 3
+                data.x,
+                y3_top,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 4
-                x = data.x - (data.w * .5),
-                y = newY4,
-                w = h_top_bottom * .5,
-                h = y4,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 4
+                data.x - (data.w * .5),
+                newY4,
+                h_top_bottom * .5,
+                y4,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             y4 += (data.h * .05)
             newY4 += (data.h * .05) * .5
@@ -176,49 +176,49 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 1
-                x = newX1 - .001,
-                y = y1_bottom,
-                w = w1,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 1
+                newX1 - .001,
+                y1_bottom,
+                w1,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 2
-                x = data.x + (data.w * .5),
-                y = data.y,
-                w = h_top_bottom * .5,
-                h = data.h,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 2
+                data.x + (data.w * .5),
+                data.y,
+                h_top_bottom * .5,
+                data.h,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 3
-                x = data.x,
-                y = y3_top,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 3
+                data.x,
+                y3_top,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 4
-                x = data.x - (data.w * .5),
-                y = newY4,
-                w = h_top_bottom * .5,
-                h = y4,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 4
+                data.x - (data.w * .5),
+                newY4,
+                h_top_bottom * .5,
+                y4,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             w1 -= (data.w * .005)
             newX1 += (data.w * .005) * .5
@@ -227,38 +227,38 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 2
-                x = data.x + (data.w * .5),
-                y = newY2 - .005,
-                w = h_top_bottom * .5,
-                h = y2,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 2
+                data.x + (data.w * .5),
+                newY2 - .005,
+                h_top_bottom * .5,
+                y2,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 3
-                x = data.x,
-                y = y3_top,
-                w = data.w,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 3
+                data.x,
+                y3_top,
+                data.w,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 4
-                x = data.x - (data.w * .5),
-                y = newY4,
-                w = h_top_bottom * .5,
-                h = y4,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 4
+                data.x - (data.w * .5),
+                newY4,
+                h_top_bottom * .5,
+                y4,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             y2 -= (data.h * .05)
             newY2 -= (data.h * .05) * .5
@@ -267,27 +267,27 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 3
-                x = newX3,
-                y = y3_top,
-                w = w3 - .002,
-                h = h_top_bottom,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 3
+                newX3,
+                y3_top,
+                w3 - .002,
+                h_top_bottom,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
-            rect({ -- step 4
-                x = data.x - (data.w * .5),
-                y = newY4,
-                w = h_top_bottom * .5,
-                h = y4,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 4
+                data.x - (data.w * .5),
+                newY4,
+                h_top_bottom * .5,
+                y4,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             w3 -= (data.w * .005)
             newX3 -= (data.w * .005) * .5
@@ -296,22 +296,22 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect({ -- step 4
-                x = data.x - (data.w * .5),
-                y = newY4,
-                w = h_top_bottom * .5,
-                h = y4,
-                r = options?.color?[1] or 255,
-                g = options?.color?[2] or 255,
-                b = options?.color?[3] or 255,
-                a = options?.color?[4] or 150
-            })
+            rect( -- step 4
+                data.x - (data.w * .5),
+                newY4,
+                h_top_bottom * .5,
+                y4,
+                options?.color?[1] or 255,
+                options?.color?[2] or 255,
+                options?.color?[3] or 255,
+                options?.color?[4] or 150
+            )
 
             y4 -= (data.h * .05)
             newY4 += (data.h * .05) * .5
         end
         
-        if step == 8 then break end
+        if step >= 8 then break end
 
         Wait(0)
     end

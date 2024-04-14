@@ -1,9 +1,9 @@
 --- Progress from 'left' to 'right'
---- @param options table
 --- @param menu Menu
+--- @param options table
 --- @param config table
 --- @param data table
---- @param rect RectProps
+--- @param rect DrawProps.rect<{rect: fun(x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer): void}>
 return function(self, menu, options, config, data, rect)
     local y <const> = data.y + (data.h * .5) - (data.h * .1) * .5
     local h <const> = data.h * .1
@@ -15,16 +15,16 @@ return function(self, menu, options, config, data, rect)
             break
         end
 
-        rect({
-            x = newX,
-            y = y,
-            w = w,
-            h = h,
-            r = options?.color?[1] or 255,
-            g = options?.color?[2] or 255,
-            b = options?.color?[3] or 255,
-            a = options?.color?[4] or 150
-        })
+        rect(
+            newX,
+            y,
+            w,
+            h,
+            options?.color?[1] or 255,
+            options?.color?[2] or 255,
+            options?.color?[3] or 255,
+            options?.color?[4] or 150
+        )
 
         w += (data.w * .005)
         newX += (data.w * .005) * .5

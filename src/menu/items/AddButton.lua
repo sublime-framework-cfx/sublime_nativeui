@@ -1,4 +1,5 @@
 local config <const> = require '@sublime_nativeui.config.menu.button'
+---@type DrawProps
 local draw <const> = require '@sublime_nativeui.src.utils.draw'
 local animation <const> = require '@sublime_nativeui.src.menu.items.animation.play'
 ---@param self Items
@@ -25,18 +26,19 @@ return function(self, label, description, options, actions, nextMenu)
         end
     else
         local y <const> = menu:GetY(config.h)
+
         if self:IsActive(menu) then
-            --DrawRect(menu.x, y + menu.offsetY, menu.w, config.h, 255, 255, 255, 255)
-            draw.rect({
-                x = menu.x,
-                y = y + menu.offsetY,
-                w = menu.w,
-                h = config.h,
-                r = options?.color?.highlight?[1] or 200,
-                g = options?.color?.highlight?[2] or 200,
-                b = options?.color?.highlight?[3] or 200,
-                a = options?.color?.highlight?[4] or 150
-            })
+
+            draw.rect(
+                menu.x,
+                y + menu.offsetY,
+                menu.w,
+                config.h,
+                options?.color?.highlight?[1] or 200,
+                options?.color?.highlight?[2] or 200,
+                options?.color?.highlight?[3] or 200,
+                options?.color?.highlight?[4] or 150
+            )
 
             if options?.animation or config.animation.enabled then
                 if (animation.state ~= self.id) and not menu.playAnimation then
@@ -61,38 +63,36 @@ return function(self, label, description, options, actions, nextMenu)
                 end
             end
         else
-            --DrawRect(menu.x, y + menu.offsetY, menu.w, config.h, 0, 0, 0, 120)
-            draw.rect({
-                x = menu.x,
-                y = y + menu.offsetY,
-                w = menu.w,
-                h = config.h,
-                r = options?.color?.background?[1] or 0,
-                g = options?.color?.background?[2] or 0,
-                b = options?.color?.background?[3] or 0,
-                a = options?.color?.background?[4] or 120
-            })
+            draw.rect(
+                menu.x,
+                y + menu.offsetY,
+                menu.w,
+                config.h,
+                options?.color?.background?[1] or 0,
+                options?.color?.background?[2] or 0,
+                options?.color?.background?[3] or 0,
+                options?.color?.background?[4] or 120
+            )
             if self?.actions.onExit then
                 self:IsLastActive() 
             end
         end
 
         if label then
-            draw.text({
-                text = label,
-                x = menu.x - menu.w / 2 + .005,
-                y = y + menu.offsetY - .0125,
-                font = 0,
-                scale = 0.25,
-                r = options?.color?.text?[1] or 255,
-                g = options?.color?.text?[2] or 255,
-                b = options?.color?.text?[3] or 255,
-                a = options?.color?.text?[4] or 255,
-                alignment = 0,
-                dropShadow = options?.dropShadow or false,
-                outline = false,
-                wordWrap = 0
-            })
+            draw.text(
+                label,
+                menu.x - menu.w / 2 + .005,
+                y + menu.offsetY - .0125,
+                0,
+                0.25,
+                options?.color?.text?[1] or 255,
+                options?.color?.text?[2] or 255,
+                options?.color?.text?[3] or 255,
+                options?.color?.text?[4] or 255,
+                0, -- alignment left
+                options?.dropShadow or false,
+                false
+            )
         end
 
         menu.offsetY += (config.h + menu.padding)
