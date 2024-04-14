@@ -5,4 +5,6 @@
 ---@param styles table
 return function(self, menu, styles)
     ---@todo
+
+    return self
 end

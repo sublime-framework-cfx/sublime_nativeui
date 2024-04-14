@@ -4,14 +4,12 @@ if not _VERSION:find('5.4') then
 end
 
 local s_ui <const> = 'sublime_nativeui'
-local service <const> = IsDuplicityVersion() and 'server' or 'client'
-
-if service == 'server' then
-    error("^1sublime_nativeui ne peut pas être utilisé dans une ressource serveur!^0", 2)
-end
-
 if not GetResourceState(s_ui):find('start') then
     error('^1sublime_nativeui doit être lancé avant cette ressource!^0', 2)
+end
+
+if IsDuplicityVersion() then
+    return warn("Isn't supported in server side!")
 end
 
 local export <const> = exports[s_ui]
@@ -154,12 +152,67 @@ end
 
 local nativeui = setmetatable({
     menus = {},
-    current = '',
     exportsMethod = export:GetExportMethod(),
     env = GetCurrentResourceName(),
+    cache = export:GetCache(),
+    await = Citizen.Await
 }, {
     __index = call_module,
     __call = call_module,
 })
+
+---@param id string
+---@return boolean, string?
+local function GoClose(id)
+    local menu <const> = nativeui.menus[id]
+    
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+
+    local closed <const>, reason <const> = menu:GoClose() -- 'export'
+    return closed, reason
+end
+
+---@param id string
+---@return boolean, string?
+local function GoOpen(id)
+    local menu <const> = nativeui.menus[id]
+    
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+
+    local opened <const>, reason <const> = menu:GoOpen() -- 'export'
+    return opened, reason
+end
+
+---@param id string
+---@return boolean, string?
+local function Destroy(id)
+    local menu <const> = nativeui.menus[id]
+    
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+
+    nativeui.menus[id] = nil
+    return true
+end
+
+exports('GoClose', GoClose)
+exports('GoOpen', GoOpen)
+exports('Destroy', Destroy)
+
+AddEventHandler('sublime_nativeui:cache:set', function(key, value)
+    nativeui.cache[key] = value
+    local menu = nativeui.menus[nativeui.CurrentOpen()]
+    if menu then
+        menu:SetSizeResponsive()
+    end
+end)
 
 _ENV.nativeui = nativeui
