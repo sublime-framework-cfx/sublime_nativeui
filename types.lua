@@ -20,30 +20,13 @@
 ------------------------------------------------------------------------
 -- [utils]
 ------------------------------------------------------------------------
--- draw.text
----@class TextProps
----@field text string
----@field x number
----@field y number
----@field font number
----@field scale number
----@field r number
----@field g number
----@field b number
----@field a number
----@field alignment number
----@field dropShadow boolean
----@field outline boolean
----@field wordWrap number
 
--- draw.rect
----@class RectProps
----@field x number
----@field y number
----@field w number
----@field h number
----@field r number
----@field g number
----@field b number
----@field a number
+--draw
+---@class DrawProps
+---@field rect fun(x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer): void
+---@field text fun(text: string, x: float, y: float, font: integer, scale: float, r: integer, g: integer, b: integer, a: integer, alignment: string | number, dropShadow: boolean, outline: boolean, wordWrap: number): void
+---@field measureStringWidth fun(str: string, font: number, scale: number): number
+---@field scaleformMovie fun(handle: number, x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer, unk?: number): void
+
+
 ------------------------------------------------------------------------
