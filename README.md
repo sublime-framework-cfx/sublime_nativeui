@@ -19,3 +19,5 @@
     - If you want to use the example, copy the entire folder [[example]]([example]) to the ``resources`` folder of your FiveM server
     - Add `ensure [example]` to your `server.cfg` file after `sublime_nativeui`.
 - A documentation for the use of this lib will be done later when the menu will be much more complete as well as its fixed structuration!.
+
+![GitHub all releases](https://img.shields.io/github/downloads/sublime-framework-cfx/sublime_nativeui/total?color=%2329c785&style=for-the-badge) 
