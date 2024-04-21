@@ -19,16 +19,15 @@ return function(self, label, description, options, actions, nextMenu)
     self.actions = actions or self.actions
     self.label = label
     self.description = description
+    self.options = options
+    self.canInteract = options?.canInteract == nil and true or options.canInteract
 
     if (menu.counter < menu.pagination.min) or (menu.counter > menu.pagination.max ) then
-        if self.actions.onExit then
-            self:IsLastActive() 
-        end
+        self:NoVisible()
     else
         local y <const> = menu:GetY(config.h)
 
-        if self:IsActive(menu) then
-
+        if self:IsActive() then
             draw.rect(
                 menu.x,
                 y + menu.offsetY,
@@ -52,7 +51,7 @@ return function(self, label, description, options, actions, nextMenu)
             end
 
             menu.currentDescription = description
-            if IsControlJustPressed(0, 191) then -- ENTER only
+            if IsControlJustPressed(0, 191) and self.canInteract then -- ENTER only
                 if self?.actions.onSelected then
                     self.actions.onSelected(self)
                     PlaySoundFrontend(-1, "SELECT", "HUD_LIQUOR_STORE_SOUNDSET", true)
