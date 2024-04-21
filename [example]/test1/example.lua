@@ -19,6 +19,7 @@ function sublimeui:Opened()
         return a.name < b.name
     end)
     self.menus = ordered
+    self.buttons = {}
 end
 
 function sublimeui:Closed()
@@ -39,10 +40,8 @@ local reg <const> = {
 }
 
 function sublimeui:IsVisible()
-    local buttons = {}
-
     self:Elements(function(Item)
-        buttons = {}
+        local buttons = self.buttons
         for i = 1, #self.menus do
             local m <const> = self.menus[i]
             if m.id ~= self.id then
@@ -61,6 +60,7 @@ function sublimeui:IsVisible()
         if not self.canPrint then
             self.canPrint = true
             local info = {}
+            local buttons = self.buttons
             for i = 1, #buttons do
                 local b <const> = buttons[i]
                 info[b.id] = {
@@ -76,11 +76,7 @@ function sublimeui:IsVisible()
 end
 
 RegisterCommand('sublimeui_test', function()
-    if sublimeui:IsOpen() then
-        sublimeui:Close()
-    else
-        sublimeui:Open()
-    end
+    sublimeui:Toggle()
 end)
 
 local test_100 = nativeui.CreateMenu:new({
@@ -91,7 +87,7 @@ local test_100 = nativeui.CreateMenu:new({
 })
 
 function test_100:Opened()
-    self:ResetIndex()
+    --self:ResetIndex()
 end
 
 function test_100:IsVisible()
