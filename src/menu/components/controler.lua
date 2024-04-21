@@ -45,22 +45,24 @@ end
 local function Controler(menu)
     pressed = false
 
-    if menu.closable and IsControlJustPressed(0, 194) then -- BACKSPACE
-        menu:Close('GoBack')
-    end
-
-    if (step < 3 and (GetGameTimer() - time > 150) or (step < 6 and step >= 3 and GetGameTimer() - time > 75)) or (step >= 6 and GetGameTimer() - time > 45) then
-        if IsControlPressed(0, 172) then -- UP
-            GoUp(menu)
-        elseif IsControlPressed(0, 173) then -- DOWN    
-            GoDown(menu)
+    if not menu.freezeControl then
+        if menu.closable and IsControlJustPressed(0, 194) then -- BACKSPACE
+            menu:Close('GoBack')
         end
-    else
-        pressed = true
-    end
 
-    --print(step, 'step', time, GetGameTimer() - time, 'time', pressed, 'pressed')
-    if not pressed then step = 0 end
+        if (step < 3 and (GetGameTimer() - time > 150) or (step < 6 and step >= 3 and GetGameTimer() - time > 75)) or (step >= 6 and GetGameTimer() - time > 45) then
+            if IsControlPressed(0, 172) then -- UP
+                GoUp(menu)
+            elseif IsControlPressed(0, 173) then -- DOWN    
+                GoDown(menu)
+            end
+        else
+            pressed = true
+        end
+
+        
+        if not pressed then step = 0 end
+    end
 end
 
 return Controler, GoUp, GoDown
