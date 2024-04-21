@@ -6,7 +6,6 @@ local animations <const> = require '@sublime_nativeui.src.menu.components.animat
 local draw <const> = require '@sublime_nativeui.src.utils.draw'
 math.round = require '@sublime_nativeui.src.utils.math'.Round
 
-
 local Menu = class('menu')
 local Items, Panels = class('items'), class('panels')
 local nativeui = _ENV.nativeui
@@ -15,6 +14,10 @@ function Items:IsActive()
     local active <const> = self.menu.index == self.menu.counter
     
     if active then
+        if self.canInteract and self.menu.freezeControl then
+            self.canInteract = false
+        end
+
         if self.menu.lastIndex == 0 then
             self.menu.lastIndex = self.menu.index
 
@@ -43,6 +46,18 @@ function Items:IsLastActive()
     end
 
     return isLast
+end
+
+function Items:Visible()
+    local menu <const> = self.menu
+
+    ---@todo global settings of items
+end
+
+function Items:NoVisible()
+    if self.actions?.onExit then
+        self:IsLastActive() 
+    end
 end
 
 function Items:AddButton(label, description, options, actions, nextMenu)
@@ -78,7 +93,6 @@ function Menu:Init()
     self.subtitleH = (not self.subtitle and false) or (self.subtitleH or config.subtitleH)
     self.glare = (not self.banner and false) or (self.glare or config.glare)
     self.scaleformGlare = (self.glare and nativeui.RequestGlare())
-    self.pagination = self.pagination or config.pagination
     self.background = self.background == nil and config.background or self.background
     self.backgroundColor = self.backgroundColor or config.backgroundColor
 
@@ -87,12 +101,19 @@ function Menu:Init()
     self.counter, self.totalCounter = 0, 0
     self.maxVisibleItems = self.maxVisibleItems or config.maxVisibleItems
     self.lastDescription = nil
+    self.pagination = self.pagination or { min = 1, max = self.maxVisibleItems or config.maxVisibleItems }
 
     self.closable = self.closable == nil and true or self.closable
 
     ---@todo rework to set animation enter and exit
     self.animation = self.animation == nil and config.animation.enabled and config.animation.type or self.animation
     self.playAnimation = false
+
+    --- Controler
+    self.lastPressed = nil
+    self.stepPressed = 0
+    self.timeControl = GetGameTimer()
+    self.freezeControl = false
 
     nativeui.RegisterMenu({
         id = self.id,
@@ -110,9 +131,19 @@ function Menu:Init()
     nativeui.menus[self.id] = self
 end
 
+---@param bool boolean
+function Menu:SetFreezeControl(bool)
+    self.freezeControl = bool
+end
+
+--require '@sublime_nativeui.src.menu.components.controler'
+
 function Menu:ResetIndex()
     self.index = 1
     self.lastIndex = 0
+    self.pagination.min = 1
+    self.pagination.max = self.maxVisibleItems or config.maxVisibleItems
+    self.lastPressed = nil
 end
 
 function Menu:SetGlare(boolean)
@@ -286,8 +317,12 @@ end
 
 ---@param to string | Menu
 function Menu:NextMenu(to)
-    local menu <const> = type(to) == 'string' and to or to.id
-    nativeui.OpenMenu(menu)
+    if type(to) ~= 'function' then
+        local menu <const> = type(to) == 'string' and to or to.id
+        nativeui.OpenMenu(menu)
+    else
+        ---@todo sub right / left menu
+    end
 end
 
 ---@param clearQueue? boolean
@@ -310,6 +345,15 @@ function Menu:Close(_type, clearQueue)
 
     local closed <const> = nativeui.CloseMenu(self.id, _type, clearQueue)
     return true
+end
+
+---@param clearQueue? boolean
+function Menu:Toggle(clearQueue)
+    if self:IsOpen() then
+        self:Close(nil, clearQueue)
+    else
+        self:Open(clearQueue)
+    end
 end
 
 ---@return boolean, string?
