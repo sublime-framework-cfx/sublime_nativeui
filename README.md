@@ -20,5 +20,5 @@
     - Add `ensure [example]` to your `server.cfg` file after `sublime_nativeui`.
 - A documentation for the use of this lib will be done later when the menu will be much more complete as well as its fixed structuration!.
 
-![GitHub all releases](https://img.shields.io/github/downloads/sublime-framework-cfx/sublime_nativeui/total?color=%2329c785&style=for-the-badge) 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/sublime-framework-cfx/sublime_nativeui/total?style=social)
+![](https://img.shields.io/github/downloads/sublime-framework-cfx/sublime_nativeui/total?color=%2329c785&style=for-the-badge) 
+![](https://img.shields.io/github/downloads/sublime-framework-cfx/sublime_nativeui/total?style=social)
