@@ -1,7 +1,3 @@
----@experimental
-
---[[ that will be rework for easy config et check coords of menu later ... ]]
-
 local animation = {
     config = {
         open = {
@@ -14,6 +10,7 @@ local animation = {
 function animation.open(menu, config)
     local endY = menu.defaultY
     local currentY = animation.config.open.y
+    menu.y = currentY
 
     local startTime = GetGameTimer()
     local duration = 250

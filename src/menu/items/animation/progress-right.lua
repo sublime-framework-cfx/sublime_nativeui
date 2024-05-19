@@ -31,4 +31,6 @@ return function(self, menu, options, config, data, rect)
 
         Wait(0)
     end
+
+    return true
 end

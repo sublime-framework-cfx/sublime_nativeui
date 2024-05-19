@@ -29,4 +29,6 @@ return function(self, menu, options, config, data, rect)
         w += (data.w * .005)
         Wait(0)
     end
+    
+    return true
 end

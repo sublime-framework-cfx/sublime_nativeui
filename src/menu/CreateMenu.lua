@@ -1,21 +1,38 @@
 local config <const> = require '@sublime_nativeui.config.menu.global' 
 local class <const> = require '@sublime_nativeui.src.utils.class'
 local Controler <const> = require '@sublime_nativeui.src.menu.components.controler'
-local animations <const> = require '@sublime_nativeui.src.menu.components.animation.play'
+local animationsMenu = require '@sublime_nativeui.src.menu.components.animation.play'
+local animationItems = require '@sublime_nativeui.src.menu.items.animation.play'
+local configItems <const> = require '@sublime_nativeui.config.menu.button'
 ---@type DrawProps
 local draw <const> = require '@sublime_nativeui.src.utils.draw'
 math.round = require '@sublime_nativeui.src.utils.math'.Round
 
 local Menu = class('menu')
-local Items, Panels = class('items'), class('panels')
+local SubMenu = class('submenu', Menu)
+--local Items, Panels = class('items'), class('panels')
 local nativeui = _ENV.nativeui
+local Items = {}
 
-function Items:IsActive()
+function Items:GetY(h)
+    return (h / 2) + self.menu.y
+end
+
+function Items:IsActive(y)
     local active <const> = self.menu.index == self.menu.counter
     
     if active then
         if self.canInteract and self.menu.freezeControl then
             self.canInteract = false
+        end
+
+        if not self.menu.playAnimation then
+            self.animations:play(self.menu, self.options?.animation, configItems.animation, {
+                x = self.menu.x,
+                y = y,
+                w = self.menu.w,
+                h = self.h or configItems.h
+            }, draw.rect, self.id)
         end
 
         if self.menu.lastIndex == 0 then
@@ -32,6 +49,13 @@ function Items:IsActive()
     end
 
     return active
+end
+
+function Items:OnSelected(selected)
+    CreateThread(function()
+        selected()
+        PlaySoundFrontend(-1, "SELECT", "HUD_LIQUOR_STORE_SOUNDSET", true)
+    end)
 end
 
 function Items:IsLastActive()
@@ -58,6 +82,10 @@ function Items:NoVisible()
     if self.actions?.onExit then
         self:IsLastActive() 
     end
+
+    if self.playAnimation then
+        self.playAnimation = false
+    end
 end
 
 function Items:AddButton(label, description, options, actions, nextMenu)
@@ -74,6 +102,7 @@ end
 -------------------------------------
 
 function Menu:Init()
+    --print(self.id, self.name, self.type, self.env)
     if not self.id then return warn('Menu id is required') end
     if type(self.id) ~= 'string' then return warn('Menu id must be a string') end
     if nativeui.menus[self.id] or nativeui.GetMenu(self.id) then return warn(('Menu with id %s already exist'):format(self.id)) end
@@ -86,6 +115,7 @@ function Menu:Init()
     self.w = self.w or config.default.w
     self.h = self.h or config.default.h
     self.mouse = self.mouse or config.mouse
+    self.type = self.parent and 'submenu' or 'menu'
 
     self.banner = self.banner == nil and config.banner or self.banner
     self.bannerH = self.banner and (self.bannerH or config.bannerH)
@@ -106,8 +136,8 @@ function Menu:Init()
     self.closable = self.closable == nil and true or self.closable
 
     ---@todo rework to set animation enter and exit
-    self.animation = self.animation == nil and config.animation.enabled and config.animation.type or self.animation
-    self.playAnimation = false
+    -- self.animation = self.animation == nil and config.animation.enabled and config.animation.type or self.animation
+    -- self.playAnimation = false
 
     --- Controler
     self.lastPressed = nil
@@ -115,17 +145,35 @@ function Menu:Init()
     self.timeControl = GetGameTimer()
     self.freezeControl = false
 
-    nativeui.RegisterMenu({
-        id = self.id,
-        env = nativeui.env,
-        type = 'menu',
-        name = self.name or self.id
-    })
+    if self.type == 'menu' then
+        nativeui.RegisterMenu({
+            id = self.id,
+            env = nativeui.env,
+            type = 'menu',
+            name = self.name or self.id
+        })
+    elseif self.type == 'submenu' then
+        self.banner = false
+        self.subtitle = false
+    end
 
-    self.Items, self.Panels = Items:new({
-        menu = self
-    }), Panels:new({
-        menu = self
+    -- self.Items, self.Panels = Items:new({
+    --     menu = self
+    -- }), Panels:new({
+    --     menu = self
+    -- })
+
+    self.Items = setmetatable({
+        menu = self,
+        animations = animationItems:new({
+            menu = self,
+        }),
+        playAnimation = false,
+        actions = {}
+    }, { __index = Items })
+
+    self.animation = animationsMenu:new({
+        menu = self,
     })
 
     nativeui.menus[self.id] = self
@@ -181,7 +229,6 @@ function Menu:Banner() ---@todo personalization config & menu object
     draw.rect(self.x, y, self.w, self.bannerH, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
     draw.text(self.title, self.x * .35, y * .7, 1, .9, 255, 255, 255, 255, true)
     self.offsetY += (self.bannerH + self.padding)
-
     if self.scaleformGlare then ---@todo A voir pour refaire les calcules pour calibrer le scaleform a la bannière...
         --print(self.base, self.ratio, MathRound(self.ratio, 2))
         local gx <const> = (self.x / self.rw + 0.485) 
@@ -205,6 +252,9 @@ function Menu:Subtitle()
     draw.text(self.subtitle, self.x - self.w / 2 + .005, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, true)
     draw.text(self.index .. '/' .. self.totalCounter, self.x + self.w / 2 - .001, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, 'right', true)
     self.offsetY += (self.subtitleH + self.padding)
+    if not self.parent then
+        self.offsetY_banner = (self.offsetY + self.bannerH)
+    end
 end
 
 function Menu:SetSubtitle(value)
@@ -262,18 +312,39 @@ function Menu:Elements(Item, Panel)
     self.totalOffsetY = self.offsetY
 end
 
-function Menu:GoPool()
-    self:SetSizeResponsive()
+-- function Menu:GetOffsetFromParent()
+--     return self.parent and self.parent.offsetY or 0
+-- end
 
-    if self.animation or config.animation then
-        self.defaultY = self.y
-        self.defaultX = self.x
-        self.playAnimation = true
-        animations('open', self, self.animation or config.animation)
-    end
+function Menu:GoPool(bool, y, h, x)
+    self:SetSizeResponsive()
 
     if self.Opened then
         self:Opened()
+    end
+
+    if self.type == 'submenu' then
+        self.parent.freezeControl = true
+    end
+
+    if self.animation or config.animation then
+        --self.offsetY += (self.bannerH + self.padding)
+        local newxY <const> = bool and self:GetY(self.parent.bannerH)
+        --self.defaultY = bool and (self:GetY(self.parent.offsetY_banner - self.padding*12)) or self.y
+        self.defaultY = bool and (newxY + self.padding)/2 or self.y
+        self.defaultW = self.w
+        self.defaultX = bool and (self.x + self.defaultW) + self.padding or self.x
+        if bool then
+            self.x = self.defaultX
+            self.y = self.defaultY
+        end
+        self.playAnimation = true
+        self.animation:open(self.animation or config.animation)
+    end
+
+    local offsetY = bool and self.defaultY or 0
+    if not bool then
+        LocalPlayer.state:set('menuOpen', self.id, false) ---@force
     end
 
     CreateThread(function()
@@ -284,6 +355,23 @@ function Menu:GoPool()
 
         while self.opened or self.playAnimation do
             self.counter, self.offsetY, self.offsetX = 0, 0, 0
+
+            if bool and not self.parent.opened then
+                self:GoClose()
+                return
+            elseif not bool then
+                if LocalPlayer.state.menuOpen ~= self.id then
+                    self:GoClose()
+                    return
+                end
+            end
+
+            if self.condition and type(self.condition) == 'function' then
+                if not self.condition() then
+                    self:Close(nil, true)
+                    return
+                end
+            end
 
             if self.background then self:Background() end
 
@@ -316,54 +404,87 @@ function Menu:IsOpen()
 end
 
 ---@param to string | Menu
-function Menu:NextMenu(to)
-    if type(to) ~= 'function' then
+function Menu:NextMenu(to, y, h, x)
+    if (type(to) == 'string') or (not y and not h )then
         local menu <const> = type(to) == 'string' and to or to.id
-        nativeui.OpenMenu(menu)
+        TriggerEvent('sublime_nativeui:open', menu)
     else
-        ---@todo sub right / left menu
+        local submenu = nativeui.menus[to.id]
+        submenu:GoOpen(submenu.parent and true or false, y, h, x)
     end
 end
 
 ---@param clearQueue? boolean
----@return boolean, string?
 function Menu:Open(clearQueue)
-    return nativeui.OpenMenu(self.id, nil, clearQueue)
+    if self.opened then
+        return false, ('Menu with id %s already opened [%s]'):format(self.id, nativeui.env)
+    end
+
+    if self.type == 'submenu' then
+        return
+    end
+
+    TriggerEvent('sublime_nativeui:open', self.id, clearQueue)
 end
 
 ---@param _type? string<'GoBack'>
 ---@param clearQueue? boolean
----@return boolean, string?
 function Menu:Close(_type, clearQueue)
     if not self.opened then
         return false, ('Menu with id %s not opened'):format(self.id)
     end
 
-    if _type == 'GoBack' then
-        return nativeui.OpenMenu(self.id, _type, clearQueue)
+    if self.type == 'submenu' then
+        self:GoClose()
+        local parent = self.parent
+        parent:SetFreezeControl(false)
+        return
     end
 
-    local closed <const> = nativeui.CloseMenu(self.id, _type, clearQueue)
-    return true
+    TriggerEvent('sublime_nativeui:close', self.id, _type == 'GoBack' and true or false, clearQueue)
 end
 
 ---@param clearQueue? boolean
-function Menu:Toggle(clearQueue)
+function Menu:Toggle()
     if self:IsOpen() then
-        self:Close(nil, clearQueue)
+        self:Close()
     else
-        self:Open(clearQueue)
+        self:Open()
     end
 end
 
+---@param id string
+---@param name string
+---@param parent? string
+---@return SubMenu
+function Menu:AddSubMenu(id, name)
+    self.children = SubMenu:new({
+        id = id,
+        name = name,
+        parent = self,
+        type = 'submenu'
+    }) 
+    return self.children
+end
+
 ---@return boolean, string?
-function Menu:GoOpen()
+function Menu:GoOpen(bool, y, h, x)
     if self.opened then
         return false, ('Menu with id %s already opened'):format(self.id)
     end
 
+    if self.freezeControl then
+        self:SetFreezeControl(false)
+    end
+
+    if self.condition and type(self.condition) == 'function' then
+        if not self.condition() then
+            return
+        end
+    end
+
     self.opened = true
-    self:GoPool()
+    self:GoPool(bool, y, h, x)
 
     return true
 end
@@ -377,11 +498,21 @@ end
 
 ---@return boolean
 function Menu:GoClose()
+    local p
+    if not self.opened then
+        return false, ('Menu with id %s not opened'):format(self.id)
+    end
+
+    if self.children and self.children.opened then
+        return self.children:GoClose()
+    end
+
     if self.animation or config.animation then
+        p = promise.new()
         CreateThread(function()
-            if self.animation or config.animation then
+            if self.animation then
                 self.playAnimation = true
-                animations('close', self, self.animation or config.animation)
+                self.animation:close(config.animation)
 
                 while self.playAnimation do
                     Wait(50)
@@ -391,15 +522,19 @@ function Menu:GoClose()
             if self.Closed then
                 self:Closed()
             end
+
+            self.opened = false
+            p:resolve(true)
         end)
     else
         if self.Closed then
             self:Closed()
         end
+        self.opened = false
+        return true
     end
 
-    self.opened = false
-    return true
+    return p and nativeui.await(p) or false
 end
 
 return Menu
