@@ -161,51 +161,31 @@ local nativeui = setmetatable({
     __call = call_module,
 })
 
----@param id string
----@return boolean, string?
-local function GoClose(id)
+AddEventHandler('sublime_nativeui:close:'..nativeui.env, function(id, resolve)
     local menu <const> = nativeui.menus[id]
+    --print('close', id, menu.id)
     
     if not menu then
         warn(('Menu with id %s not found'):format(id))
-        return false, ('Menu with id %s not found'):format(id)
+        resolve(false, ('Menu with id %s not found'):format(id))
+        return
     end
 
-    local closed <const>, reason <const> = menu:GoClose() -- 'export'
-    return closed, reason
-end
+    resolve(menu:GoClose())
+end)
 
----@param id string
----@return boolean, string?
-local function GoOpen(id)
+AddEventHandler('sublime_nativeui:open:'..nativeui.env, function(id, resolve)
     local menu <const> = nativeui.menus[id]
-    
+    --print('open', id, menu.id)
+
     if not menu then
         warn(('Menu with id %s not found'):format(id))
-        return false, ('Menu with id %s not found'):format(id)
+        resolve(false, ('Menu with id %s not found'):format(id))
+        return
     end
 
-    local opened <const>, reason <const> = menu:GoOpen() -- 'export'
-    return opened, reason
-end
-
----@param id string
----@return boolean, string?
-local function Destroy(id)
-    local menu <const> = nativeui.menus[id]
-    
-    if not menu then
-        warn(('Menu with id %s not found'):format(id))
-        return false, ('Menu with id %s not found'):format(id)
-    end
-
-    nativeui.menus[id] = nil
-    return true
-end
-
-exports('GoClose', GoClose)
-exports('GoOpen', GoOpen)
-exports('Destroy', Destroy)
+    resolve(menu:GoOpen())
+end)
 
 AddEventHandler('sublime_nativeui:cache:set', function(key, value)
     nativeui.cache[key] = value
@@ -216,3 +196,72 @@ AddEventHandler('sublime_nativeui:cache:set', function(key, value)
 end)
 
 _ENV.nativeui = nativeui
+
+--[[
+    Old work
+
+LocalPlayer.state:set('menuOpen', nil, false)
+AddStateBagChangeHandler('menuOpen', nil, function(bagName, key, value, reserved, replicated)
+    if replicated then return end
+    if not nativeui.cache.playerid then
+        return warn('Player id not found in cache!')
+    end
+    local ply = GetPlayerFromStateBagName(bagName)
+    if ply ~= nativeui.cache.playerid then return end
+    if not value then
+        return
+    else
+        print('val: '..value)
+        --LocalPlayer.state:set('menuOpen', nil, false)
+        local menu = nativeui.menus[value]
+        print(menu.opened)
+        if menu and not menu.opened then
+            print('opeen')
+            menu:GoOpen()
+        elseif menu and menu.opened then
+            print('clooose')
+            menu:GoClose()
+        end
+    end
+end)
+---@param id string
+---@return boolean, string?
+local function GoClose(id)
+    local menu <const> = nativeui.menus[id]
+ 
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+    local closed <const>, reason <const> = menu:GoClose() -- 'export'
+    return closed, reason
+end
+---@param id string
+---@return boolean, string?
+local function GoOpen(id)
+    local menu <const> = nativeui.menus[id]
+ 
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+    local opened <const>, reason <const> = menu:GoOpen() -- 'export'
+    return opened, reason
+end
+---@param id string
+---@return boolean, string?
+local function Destroy(id)
+    local menu <const> = nativeui.menus[id]
+ 
+    if not menu then
+        warn(('Menu with id %s not found'):format(id))
+        return false, ('Menu with id %s not found'):format(id)
+    end
+    nativeui.menus[id] = nil
+    return true
+end
+exports('GoClose', GoClose)
+exports('GoOpen', GoOpen)
+exports('Destroy', Destroy)
+
+]]
