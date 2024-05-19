@@ -1,7 +1,6 @@
 local config <const> = require '@sublime_nativeui.config.menu.button'
 ---@type DrawProps
 local draw <const> = require '@sublime_nativeui.src.utils.draw'
-local animation <const> = require '@sublime_nativeui.src.menu.items.animation.play'
 ---@param self Items
 ---@param menu Menu
 ---@param label string
@@ -11,12 +10,10 @@ local animation <const> = require '@sublime_nativeui.src.menu.items.animation.pl
 ---@param nextMenu table | string
 ---@return integer buttonId
 return function(self, label, description, options, actions, nextMenu)
-
     local menu <const> = self.menu
-    --print(menu.id)
     menu.counter += 1
     self.id = menu.counter
-    self.actions = actions or self.actions
+    self.actions = actions or self
     self.label = label
     self.description = description
     self.options = options
@@ -26,11 +23,13 @@ return function(self, label, description, options, actions, nextMenu)
         self:NoVisible()
     else
         local y <const> = menu:GetY(config.h)
+        local posY <const> = y + menu.offsetY
+        if self:IsActive(posY) then
+            self.y = posY
 
-        if self:IsActive() then
             draw.rect(
                 menu.x,
-                y + menu.offsetY,
+                self.y,
                 menu.w,
                 config.h,
                 options?.color?.highlight?[1] or 200,
@@ -39,26 +38,14 @@ return function(self, label, description, options, actions, nextMenu)
                 options?.color?.highlight?[4] or 150
             )
 
-            if options?.animation or config.animation.enabled then
-                if (animation.state ~= self.id) and not menu.playAnimation then
-                    animation:play(menu, options?.animation, config.animation, {
-                        x = menu.x,
-                        y = y + menu.offsetY,
-                        w = menu.w,
-                        h = config.h
-                    }, draw.rect)
-                end
-            end
-
             menu.currentDescription = description
             if IsControlJustPressed(0, 191) and self.canInteract then -- ENTER only
                 if self?.actions.onSelected then
-                    self.actions.onSelected(self)
-                    PlaySoundFrontend(-1, "SELECT", "HUD_LIQUOR_STORE_SOUNDSET", true)
+                    self:OnSelected(self.actions.onSelected)
                 end
 
                 if nextMenu then
-                    menu:NextMenu(nextMenu)
+                    menu:NextMenu(nextMenu, posY, config.h, menu.x + menu.w)
                 end
             end
         else
