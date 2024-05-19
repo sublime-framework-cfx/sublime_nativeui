@@ -46,5 +46,5 @@ return function(self, menu, options, config, data, rect)
         Wait(0)
     end
 
-    Wait(0)
+    return true
 end
