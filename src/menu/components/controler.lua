@@ -1,7 +1,16 @@
-local step, time, pressed = 0, GetGameTimer(), false
+local step, time, pressed, Controler = 0, GetGameTimer(), false, {}
 
-local function GoUp(menu)
-    local newIndex <const> = menu.index - 1
+function Controler.GoUp(menu)
+    menu.lastPressed = 'up'
+    local newIndex = menu.index - 1
+
+    while newIndex > 0 do
+        local itemSkipable = menu.Items.stock[newIndex] == 'separator' or menu.Items.stock[newIndex] == 'line'
+        if not itemSkipable then
+            break
+        end
+        newIndex -= 1
+    end
 
     if newIndex < 1 then
         menu.index = menu.counter
@@ -21,8 +30,23 @@ local function GoUp(menu)
     step += 1
 end
 
-local function GoDown(menu)
-    local newIndex <const> = menu.index + 1
+function Controler.GoDown(menu)
+    menu.lastPressed = 'down'
+    local newIndex = menu.index + 1
+    local skipped = false
+
+    if newIndex > menu.counter then
+        newIndex = 1
+    end
+
+    while (newIndex <= menu.counter)  do
+        local itemSkipable = menu.Items.stock[newIndex] == 'separator' or menu.Items.stock[newIndex] == 'line'
+        if not itemSkipable then
+            break
+        end
+        skipped = true
+        newIndex += 1
+    end
 
     if newIndex > menu.counter then
         menu.index = 1
@@ -30,8 +54,10 @@ local function GoDown(menu)
         menu.pagination.max = menu.maxVisibleItems
     else
         if menu.index == menu.pagination.max then
-            menu.pagination.min += 1
-            menu.pagination.max = menu.pagination.min + menu.maxVisibleItems - 1
+            if not skipped then
+                menu.pagination.min += 1
+                menu.pagination.max = menu.pagination.min + menu.maxVisibleItems - 1
+            end
         end
 
         menu.index = newIndex
@@ -42,7 +68,7 @@ local function GoDown(menu)
     step += 1
 end
 
-local function Controler(menu)
+function Controler.Main(menu)
     pressed = false
 
     if not menu.freezeControl then
@@ -52,9 +78,15 @@ local function Controler(menu)
 
         if (step < 3 and (GetGameTimer() - time > 150) or (step < 6 and step >= 3 and GetGameTimer() - time > 75)) or (step >= 6 and GetGameTimer() - time > 45) then
             if IsControlPressed(0, 172) then -- UP
-                GoUp(menu)
+                Controler.GoUp(menu)
             elseif IsControlPressed(0, 173) then -- DOWN    
-                GoDown(menu)
+                Controler.GoDown(menu)
+            else
+                if menu.index == 1 then
+                    if (menu.Items.stock?[menu.index] == 'separator') or (menu.Items.stock?[menu.index] == 'line') then
+                        Controler.GoDown(menu)
+                    end
+                end
             end
         else
             pressed = true
@@ -65,4 +97,4 @@ local function Controler(menu)
     end
 end
 
-return Controler, GoUp, GoDown
+return Controler

@@ -4,7 +4,7 @@
 --- @param config table
 --- @param data table
 --- @param rect DrawProps.rect<{rect: fun(x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer): void}>
-return function(self, menu, options, config, data, rect)
+return function(self, menu, options, config, data, sprite)
     local h_top_bottom <const> = data.h * .1
 
     -- Premier rectangle il va de gauche à droite comme progress-right
@@ -36,11 +36,14 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 1
+            sprite( -- step 1
+                'commonmenu',
+                'gradient_bgd',
                 newX1,
                 y1_bottom,
                 w1,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -54,22 +57,28 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 1
+            sprite( -- step 1
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y1_bottom,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 2
+            sprite( -- step 2
+                'commonmenu',
+                'gradient_bgd',
                 data.x + (data.w * .5),
                 newY2,
                 h_top_bottom * .5,
                 y2,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -83,33 +92,42 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 1
+            sprite( -- step 1
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y1_bottom,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 2
+            sprite( -- step 2
+                'commonmenu',
+                'gradient_bgd',
                 data.x + (data.w * .5),
                 data.y,
                 h_top_bottom * .5,
                 data.h,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 3
+            sprite( -- step 3
+                'commonmenu',
+                'gradient_bgd',
                 newX3,
                 y3_top,
                 w3,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -123,44 +141,56 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 1
+            sprite( -- step 1
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y1_bottom,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 2
+            sprite( -- step 2
+                'commonmenu',
+                'gradient_bgd',
                 data.x + (data.w * .5),
                 data.y,
                 h_top_bottom * .5,
                 data.h,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 3
+            sprite( -- step 3
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y3_top,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 4
+            sprite( -- step 4
+                'commonmenu',
+                'gradient_bgd',
                 data.x - (data.w * .5),
                 newY4,
                 h_top_bottom * .5,
                 y4,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -176,44 +206,56 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 1
+            sprite( -- step 1
+                'commonmenu',
+                'gradient_bgd',
                 newX1 - .001,
                 y1_bottom,
                 w1,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 2
+            sprite( -- step 2
+                'commonmenu',
+                'gradient_bgd',
                 data.x + (data.w * .5),
                 data.y,
                 h_top_bottom * .5,
                 data.h,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 3
+            sprite( -- step 3
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y3_top,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 4
+            sprite( -- step 4
+                'commonmenu',
+                'gradient_bgd',
                 data.x - (data.w * .5),
                 newY4,
                 h_top_bottom * .5,
                 y4,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -227,33 +269,42 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 2
+            sprite( -- step 2
+                'commonmenu',
+                'gradient_bgd',
                 data.x + (data.w * .5),
                 newY2 - .005,
                 h_top_bottom * .5,
                 y2,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 3
+            sprite( -- step 3
+                'commonmenu',
+                'gradient_bgd',
                 data.x,
                 y3_top,
                 data.w,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 4
+            sprite( -- step 4
+                'commonmenu',
+                'gradient_bgd',
                 data.x - (data.w * .5),
                 newY4,
                 h_top_bottom * .5,
                 y4,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -267,22 +318,28 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 3
+            sprite( -- step 3
+                'commonmenu',
+                'gradient_bgd',
                 newX3,
                 y3_top,
                 w3 - .002,
                 h_top_bottom,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
                 options?.color?[4] or 150
             )
 
-            rect( -- step 4
+            sprite( -- step 4
+                'commonmenu',
+                'gradient_bgd',
                 data.x - (data.w * .5),
                 newY4,
                 h_top_bottom * .5,
                 y4,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
@@ -296,11 +353,14 @@ return function(self, menu, options, config, data, rect)
                 step += 1
             end
 
-            rect( -- step 4
+            sprite( -- step 4
+                'commonmenu',
+                'gradient_bgd',
                 data.x - (data.w * .5),
                 newY4,
                 h_top_bottom * .5,
                 y4,
+                .0,
                 options?.color?[1] or 255,
                 options?.color?[2] or 255,
                 options?.color?[3] or 255,
