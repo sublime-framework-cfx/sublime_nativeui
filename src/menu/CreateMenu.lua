@@ -10,9 +10,8 @@ math.round = require '@sublime_nativeui.src.utils.math'.Round
 
 local Menu = class('menu')
 local SubMenu = class('submenu', Menu)
---local Items, Panels = class('items'), class('panels')
+local Items, Panels = class('items'), class('panels')
 local nativeui = _ENV.nativeui
-local Items = {}
 
 function Items:GetY(h)
     return (h / 2) + self.menu.y
@@ -22,6 +21,10 @@ function Items:IsActive(y)
     local active <const> = self.menu.index == self.menu.counter
     
     if active then
+        if self.type == 'separator' or self.type == 'line' then            
+            return
+        end
+        
         if self.canInteract and self.menu.freezeControl then
             self.canInteract = false
         end
@@ -32,7 +35,7 @@ function Items:IsActive(y)
                 y = y,
                 w = self.menu.w,
                 h = self.h or configItems.h
-            }, draw.rect, self.id)
+            }, draw.sprite, self.id)
         end
 
         if self.menu.lastIndex == 0 then
@@ -51,10 +54,26 @@ function Items:IsActive(y)
     return active
 end
 
-function Items:OnSelected(selected)
+function Items:OnSelected(selected, ...)
+    local args = ... and {...}
     CreateThread(function()
-        selected()
+        selected(self, args and table.unpack(args))
         PlaySoundFrontend(-1, "SELECT", "HUD_LIQUOR_STORE_SOUNDSET", true)
+    end)
+end
+
+function Items:OnChecked(func, bool)
+    CreateThread(function()
+        func(self, bool)
+        PlaySoundFrontend(-1, "SELECT", "HUD_LIQUOR_STORE_SOUNDSET", true)
+    end)
+end
+
+function Items:OnListChanged(onListChanged, index, list)
+    -- print('here?4', index, list, onListChanged)
+    CreateThread(function()
+        onListChanged(self, index, list)
+        PlaySoundFrontend(-1, "NAV_UP_DOWN", "HUD_LIQUOR_STORE_SOUNDSET", true)
     end)
 end
 
@@ -88,8 +107,28 @@ function Items:NoVisible()
     end
 end
 
+-------------------------------------
+-- Items Components
+-------------------------------------
+
 function Items:AddButton(label, description, options, actions, nextMenu)
     return require('@sublime_nativeui.src.menu.items.AddButton')(self, label, description, options, actions, nextMenu)
+end
+
+function Items:AddCheckbox(label, description, checked, options, actions, nextMenu)
+    return require('@sublime_nativeui.src.menu.items.AddCheckbox')(self, label, description, checked, options, actions, nextMenu)
+end
+
+function Items:AddList(label, description, index, list, options, actions, nextMenu)
+    return require('@sublime_nativeui.src.menu.items.AddList')(self, label, description, index, list, options, actions, nextMenu)
+end
+
+function Items:AddSeparator(label, options)
+    return require('@sublime_nativeui.src.menu.items.AddSeparator')(self, label, options)
+end
+
+function Items:AddLine(options)
+    return require('@sublime_nativeui.src.menu.items.AddLine')(self, options)
 end
 
 -------------------------------------
@@ -163,14 +202,24 @@ function Menu:Init()
     --     menu = self
     -- })
 
-    self.Items = setmetatable({
+    self.Items = Items:new({
         menu = self,
+        playAnimation = false,
+        actions = {},
         animations = animationItems:new({
             menu = self,
         }),
-        playAnimation = false,
-        actions = {}
-    }, { __index = Items })
+        stock = {}
+    })
+
+    -- self.Items = setmetatable({
+    --     menu = self,
+    --     animations = animationItems:new({
+    --         menu = self,
+    --     }),
+    --     playAnimation = false,
+    --     actions = {}
+    -- }, { __index = Items })
 
     self.animation = animationsMenu:new({
         menu = self,
@@ -226,7 +275,7 @@ end
 
 function Menu:Banner() ---@todo personalization config & menu object
     local y <const> = self:GetY(self.bannerH)
-    draw.rect(self.x, y, self.w, self.bannerH, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
+    draw.sprite('commonmenu', 'gradient_nav', self.x, y, self.w, self.bannerH, .0, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
     draw.text(self.title, self.x * .35, y * .7, 1, .9, 255, 255, 255, 255, true)
     self.offsetY += (self.bannerH + self.padding)
     if self.scaleformGlare then ---@todo A voir pour refaire les calcules pour calibrer le scaleform a la bannière...
@@ -248,7 +297,7 @@ end
 
 function Menu:Subtitle()
     local y <const> = self:GetY(self.subtitleH)
-    draw.rect(self.x, y + self.offsetY, self.w, self.subtitleH, 0, 0, 0, 200)
+    draw.sprite('commonmenu', 'gradient_nav', self.x, y + self.offsetY, self.w, self.subtitleH, .0, 0, 0, 0, 200)
     draw.text(self.subtitle, self.x - self.w / 2 + .005, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, true)
     draw.text(self.index .. '/' .. self.totalCounter, self.x + self.w / 2 - .001, y * .785 + self.offsetY, 0, .27, 255, 255, 255, 255, 'right', true)
     self.offsetY += (self.subtitleH + self.padding)
@@ -265,7 +314,7 @@ end
 
 function Menu:Background() ---@todo personalization config & menu object
     local y = self:GetY(self.totalOffsetY)
-    draw.rect(self.x, y, self.w, self.totalOffsetY, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
+    draw.sprite('commonmenu', 'gradient_nav', self.x, y, self.w, self.totalOffsetY, .0, self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3], self.backgroundColor[4])
 end
 
 function Menu:Description() ---@todo personalization config & menu object
@@ -293,7 +342,7 @@ function Menu:Description() ---@todo personalization config & menu object
     local yRect <const> = self:GetY(self.offsetY * 2 + self.padding + self.descH * .5) + .005
 
     ---@todo personalization config & menu object
-    draw.rect(self.x, yRect, self.w, (self.descH * .5) + .01, 0, 0, 0, 200)
+    draw.sprite('commonmenu', 'gradient_bgd', self.x, yRect, self.w, (self.descH * .5) + .01, .0, 0, 0, 0, 200)
     draw.text(self.currentDescription, self.x - self.w / 2 + .005, yText + self.padding, 0, .27, 255, 255, 255, 255, nil, true, true, self.w)
 end
 
@@ -386,7 +435,7 @@ function Menu:GoPool(bool, y, h, x)
             end
 
             self:IsVisible()
-            Controler(self)
+            Controler.Main(self)
             Wait(0)
         end
     end)
