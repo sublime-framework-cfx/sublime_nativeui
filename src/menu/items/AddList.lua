@@ -126,9 +126,11 @@ return function(self, label, description, index, list, options, actions, nextMen
             )
         end
 
-        if self.options?.rightlabel then
-            if not self.offsetX then
-                self.offsetX = draw.measureStringWidth(self.options.rightlabel, 0, 0.25)
+        local offsetX = 0
+
+        if options?.rightlabel then
+            if offsetX == 0 then
+                offsetX = draw.measureStringWidth(self.options.rightlabel, 0, 0.25)
             end
 
             draw.text(
@@ -149,7 +151,7 @@ return function(self, label, description, index, list, options, actions, nextMen
 
         draw.text(
             '← ' .. (list[index]?.label or list?[index] or index) .. ' →',
-            menu.x + menu.w / 2 - .005 - (self.offsetX or 0),
+            menu.x + menu.w / 2 - .005 - offsetX,
             y + menu.offsetY - .0125,
             0,
             0.25,
