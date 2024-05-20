@@ -2,7 +2,7 @@ local class <const> = require '@sublime_nativeui.src.utils.class'
 
 local animation = class('AnimationItems')
 
-function animation:play(menu, options, config, data, rect, items)
+function animation:play(menu, options, config, data, sprite, items)
     if self.state and self.state == menu.index then return end
     self.state = menu.index
     self.current = self.state
@@ -20,7 +20,7 @@ function animation:play(menu, options, config, data, rect, items)
         Wait(0)
         if items == menu.index then
             self.index = menu.index
-            local finish = anim(self, menu, options, config, data, rect)
+            local finish = anim(self, menu, options, config, data, sprite)
             --print(finish, 'finish')
             if finish and menu.opened then goto back end
         end

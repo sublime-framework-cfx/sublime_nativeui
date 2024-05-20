@@ -4,7 +4,7 @@
 --- @param config table
 --- @param data table
 --- @param rect DrawProps.rect<{rect: fun(x: float, y: float, w: float, h: float, r: integer, g: integer, b: integer, a: integer): void}>
-return function(self, menu, options, config, data, rect)
+return function(self, menu, options, config, data, sprite)
     local y <const> = data.y + (data.h * .5) - (data.h * .1) * .5
     local h <const> = data.h * .1
     local startX <const> = data.x + (data.w * .5)
@@ -15,11 +15,14 @@ return function(self, menu, options, config, data, rect)
             break
         end
 
-        rect(
+        sprite(
+            'commonmenu',
+            'gradient_bgd',
             newX,
             y,
             w,
             h,
+            .0,
             options?.color?[1] or 255,
             options?.color?[2] or 255,
             options?.color?[3] or 255,
