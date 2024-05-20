@@ -117,7 +117,7 @@ function draw.text(text, x, y, font, scale, r, g, b, a, alignment, dropShadow, o
 end
 
 ----------------------------------------------------
--- draw.rect
+-- draw.rect / draw.sprite
 ----------------------------------------------------
 
 ---@param x float
@@ -132,6 +132,24 @@ function draw.rect(x, y, w, h, r, g, b, a)
     DrawRect(x or .0, y or .0, w or .0, h or .0, r or 0, g or 0, b or 0, a or 100)
 end
 
+---@param dict string
+---@param name string
+---@param x float
+---@param y float
+---@param w float
+---@param h float
+---@param heading float
+---@param r integer
+---@param g integer
+---@param b integer
+---@param a integer
+function draw.sprite(dict, name, x, y, w, h, heading, r, g, b, a)
+    if not HasStreamedTextureDictLoaded(dict) then
+        RequestStreamedTextureDict(dict, true)
+    end
+
+    DrawSprite(dict, name, x or .0, y or .0, w or .0, h or .0, heading or .0, r or 255, g or 255, b or 255, a or 255)
+end
 
 ----------------------------------------------------
 -- draw.scaleformMovie
