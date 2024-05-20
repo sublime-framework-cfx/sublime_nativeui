@@ -18,6 +18,7 @@ return function(self, label, description, options, actions, nextMenu)
     self.description = description
     self.options = options
     self.canInteract = options?.canInteract == nil and true or options.canInteract
+    self.type = 'button'
 
     if (menu.counter < menu.pagination.min) or (menu.counter > menu.pagination.max ) then
         self:NoVisible()
@@ -27,11 +28,14 @@ return function(self, label, description, options, actions, nextMenu)
         if self:IsActive(posY) then
             self.y = posY
 
-            draw.rect(
+            draw.sprite(
+                'commonmenu',
+                'gradient_nav',
                 menu.x,
                 self.y,
                 menu.w,
                 config.h,
+                .0,
                 options?.color?.highlight?[1] or 200,
                 options?.color?.highlight?[2] or 200,
                 options?.color?.highlight?[3] or 200,
@@ -49,11 +53,14 @@ return function(self, label, description, options, actions, nextMenu)
                 end
             end
         else
-            draw.rect(
+            draw.sprite(
+                'commonmenu',
+                'gradient_nav',
                 menu.x,
                 y + menu.offsetY,
                 menu.w,
                 config.h,
+                .0,
                 options?.color?.background?[1] or 0,
                 options?.color?.background?[2] or 0,
                 options?.color?.background?[3] or 0,
@@ -62,6 +69,27 @@ return function(self, label, description, options, actions, nextMenu)
             if self?.actions.onExit then
                 self:IsLastActive() 
             end
+        end
+
+        if self.options?.rightlabel then
+            if not self.offsetX then
+                self.offsetX = draw.measureStringWidth(self.options.rightlabel, 0, 0.25)
+            end
+
+            draw.text(
+                self.options.rightlabel,
+                menu.x + menu.w / 2 - .005,
+                y + menu.offsetY - .0125,
+                0,
+                0.25,
+                options?.color?.text?[1] or 255,
+                options?.color?.text?[2] or 255,
+                options?.color?.text?[3] or 255,
+                options?.color?.text?[4] or 255,
+                2, -- alignment right
+                options?.dropShadow or false,
+                false
+            )
         end
 
         if label then
@@ -84,5 +112,6 @@ return function(self, label, description, options, actions, nextMenu)
         menu.offsetY += (config.h + menu.padding)
     end
 
+    self.stock[self.id] = self.type
     return self
 end
