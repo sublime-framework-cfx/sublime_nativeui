@@ -160,7 +160,7 @@ function Menu:Init()
     self.bannerH = self.banner and (self.bannerH or config.bannerH)
     self.subtitle = self.subtitle == nil and config.subtitle or self.subtitle 
     self.subtitleH = (not self.subtitle and false) or (self.subtitleH or config.subtitleH)
-    self.glare = (not self.banner and false) or (self.glare or config.glare)
+    self.glare = self.glare == false and nil or config.glare or true
     self.scaleformGlare = (self.glare and nativeui.RequestGlare())
     self.background = self.background == nil and config.background or self.background
     self.backgroundColor = self.backgroundColor or config.backgroundColor
